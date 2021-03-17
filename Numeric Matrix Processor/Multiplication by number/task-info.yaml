@@ -1,0 +1,239 @@
+type: edu
+custom_name: stage2
+files:
+- name: src/processor/Main.java
+  visible: true
+  text: |
+    package processor;
+
+    public class Main {
+        public static void main(String[] args) {
+            System.out.println("Hello World!");
+        }
+    }
+  learner_created: false
+- name: test/NumericMatrixProcessorTest.java
+  visible: false
+  text: |
+    import org.hyperskill.hstest.stage.StageTest;
+    import org.hyperskill.hstest.testcase.CheckResult;
+    import org.hyperskill.hstest.testcase.SimpleTestCase;
+    import org.hyperskill.hstest.testcase.TestCase;
+
+    import java.util.List;
+    import java.util.stream.Collectors;
+
+    public class NumericMatrixProcessorTest extends StageTest {
+
+        @Override
+        public List<TestCase> generate() {
+            return List.of(
+                new SimpleTestCase(
+                    "3 3\n" +
+                        "1 2 3\n" +
+                        "4 5 6\n" +
+                        "7 8 9\n" +
+                        "3",
+                    "3 6 9\n" +
+                        "12 15 18\n" +
+                        "21 24 27"
+                ).setCheckFunc(this::checkSolved),
+
+                new SimpleTestCase(
+                    "2 3\n" +
+                        "1 2 3\n" +
+                        "4 5 6\n" +
+                        "0",
+                    "0 0 0\n" +
+                        "0 0 0"
+                ).setCheckFunc(this::checkSolved),
+
+                new SimpleTestCase(
+                    "5 5\n" +
+                        "1 4 6 7 8\n" +
+                        "1 9 5 2 2\n" +
+                        "1 4 3 5 7\n" +
+                        "1 4 6 4 1\n" +
+                        "1 4 5 7 1\n" +
+                        "5",
+                    "5 20 30 35 40\n" +
+                        "5 45 25 10 10\n" +
+                        "5 20 15 25 35\n" +
+                        "5 20 30 20 5\n" +
+                        "5 20 25 35 5"
+                ).setCheckFunc(this::checkSolved),
+
+                new SimpleTestCase(
+                    "1 1\n" +
+                        "1\n" +
+                        "1",
+                    "1"
+                ).setCheckFunc(this::checkSolved),
+
+                new SimpleTestCase(
+                    "1 1\n" +
+                        "0\n" +
+                        "1",
+                    "0"
+                ).setCheckFunc(this::checkSolved),
+
+                new SimpleTestCase(
+                    "3 2\n" +
+                        "1 2\n" +
+                        "8 1\n" +
+                        "9 1\n" +
+                        "10",
+                    "10 20\n" +
+                        "80 10\n" +
+                        "90 10"
+                ).setCheckFunc(this::checkSolved)
+            );
+        }
+
+        private CheckResult checkSolved(String reply, String clue) {
+
+            clue = clue.strip();
+            reply = reply.strip();
+
+            if (reply.equals(clue)) {
+                return CheckResult.correct();
+            }
+
+            if (clue.equals("ERROR")) {
+                return CheckResult.wrong("");
+            }
+
+            List<String> user = reply.lines().collect(Collectors.toList());
+            List<String> answ = clue.lines().collect(Collectors.toList());
+
+            if (user.size() != answ.size()) {
+                return CheckResult.wrong("");
+            }
+
+            for (int i = 0; i < user.size(); i++) {
+                String userLine = user.get(i).strip();
+                String answLine = answ.get(i).strip();
+                if (!userLine.equals(answLine)) {
+                    return CheckResult.wrong("");
+                }
+            }
+
+            return new CheckResult(true);
+        }
+    }
+  learner_created: false
+- name: src/processor/Matrix.java
+  visible: true
+  text: |
+    package processor;
+
+    import java.util.Scanner;
+
+    public class Matrix {
+
+        Scanner scanner = new Scanner(System.in);
+
+        int numRows;
+        int numCols;
+        int[][] matrix;
+
+        public Matrix(int numRows, int numCols) {
+            this.numRows = numRows;
+            this.numCols = numCols;
+            this.matrix = new int[numRows][numCols];
+        }
+
+        public Matrix() {
+            createMatrix();
+        }
+
+        public void createMatrix() {
+            this.numRows = scanner.nextInt();
+            this.numCols = scanner.nextInt();
+
+            this.matrix = new int[numRows][numCols];
+
+            for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
+                for (int colIndex = 0; colIndex < numCols; colIndex++) {
+                    int read = scanner.nextInt();
+                    setValue(rowIndex, colIndex, read);
+                }
+            }
+        }
+
+        public void printMatrix() {
+
+            this.numRows = getNumRows();
+            this.numCols = getNumCols();
+
+            for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
+                for (int colIndex = 0; colIndex < numCols; colIndex++) {
+                    System.out.print(getValue(rowIndex, colIndex) + " ");
+                }
+                System.out.println();
+            }
+        }
+
+
+        public int getNumRows() {
+            return this.numRows;
+        }
+
+        public int getNumCols() {
+            return this.numCols;
+        }
+
+        public int getValue(int rowIndex, int colIndex) {
+            return this.matrix[rowIndex][colIndex];
+        }
+
+        public void setValue(int rowIndex, int colIndex, int value) {
+            this.matrix[rowIndex][colIndex] = value;
+        }
+
+    }
+  learner_created: true
+- name: src/processor/Operations.java
+  visible: true
+  text: |
+    package processor;
+
+    public class Operations {
+
+        public boolean checkSizes(Matrix matrixA, Matrix matrixB) {
+            int numRowsA = matrixA.getNumRows();
+            int numColsA = matrixA.getNumCols();
+
+            int numRowsB = matrixB.getNumRows();
+            int numColsB = matrixB.getNumCols();
+
+            if (numRowsA == numRowsB && numColsA == numColsB) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public Matrix sumMatrix(Matrix matrixA, Matrix matrixB) {
+
+            int numRows = matrixA.getNumRows();
+            int numCols = matrixA.getNumCols();
+
+            Matrix matrixC = new Matrix(numRows, numCols);
+
+            for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
+                for (int colIndex = 0; colIndex < numCols; colIndex++) {
+                    matrixC.setValue(rowIndex, colIndex, matrixA.getValue(rowIndex, colIndex) + matrixB.getValue(rowIndex, colIndex));
+                }
+            }
+            return matrixC;
+        }
+    }
+  learner_created: true
+feedback_link: https://hyperskill.org/projects/60/stages/324/implement
+status: Solved
+feedback:
+  message: Congratulations! Continue on <a href="https://hyperskill.org/projects/60/stages/324/implement">JetBrains
+    Academy</a>
+  time: Mon, 15 Mar 2021 20:16:35 UTC
+record: 2
